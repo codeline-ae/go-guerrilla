@@ -67,12 +67,13 @@ func (s *Parser) set(input []byte) {
 }
 
 func (s *Parser) next() byte {
-	s.pos++
-	if s.pos < len(s.buf) {
+	if s.pos+1 < len(s.buf) {
+		s.pos++
 		s.ch = s.buf[s.pos]
-		return s.ch
+	} else {
+		s.ch = 0
 	}
-	return 0
+	return s.ch
 }
 
 func (s *Parser) peek() byte {
