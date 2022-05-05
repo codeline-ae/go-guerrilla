@@ -416,7 +416,7 @@ func (s *server) handleClient(client *client) {
 			input, err := s.readCommand(client)
 			s.log().Debugf("Client[%d][%s] sent: %s", client.ID, client.RemoteIP, input)
 			if err == io.EOF && len(input) > 0 {
-				s.log().WithError(err).Warnf("Client[%d] closed the connection: %s", client.ID, client.RemoteIP)
+				s.log().WithError(err).Warnf("Client[%d] closed the connection: %s, Input length: %d", client.ID, client.RemoteIP, len(input))
 				return
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 				s.log().WithError(err).Warnf("Client[%d] Timeout: %s", client.ID, client.RemoteIP)
