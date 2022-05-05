@@ -414,19 +414,19 @@ func (s *server) handleClient(client *client) {
 		case ClientCmd:
 			client.bufin.setLimit(CommandLineMaxLength)
 			input, err := s.readCommand(client)
-			s.log().Debugf("Client sent: %s", input)
+			s.log().Debugf("Client[%d][%s] sent: %s", client.ID, client.RemoteIP, input)
 			if err == io.EOF {
-				s.log().WithError(err).Warnf("Client closed the connection: %s", client.RemoteIP)
+				s.log().WithError(err).Warnf("Client[%d] closed the connection: %s", client.ID, client.RemoteIP)
 				return
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				s.log().WithError(err).Warnf("Timeout: %s", client.RemoteIP)
+				s.log().WithError(err).Warnf("Client[%d] Timeout: %s", client.ID, client.RemoteIP)
 				return
 			} else if err == LineLimitExceeded {
 				client.sendResponse(r.FailLineTooLong)
 				client.kill()
 				break
 			} else if err != nil {
-				s.log().WithError(err).Warnf("Read error: %s", client.RemoteIP)
+				s.log().WithError(err).Warnf("Client[%d] Read error: %s", client.ID, client.RemoteIP)
 				client.kill()
 				break
 			}
