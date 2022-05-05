@@ -425,7 +425,7 @@ func (s *server) handleClient(client *client) {
 				client.sendResponse(r.FailLineTooLong)
 				client.kill()
 				break
-			} else if erro != io.EOF && err != nil {
+			} else if err != nil {
 				s.log().WithError(err).Warnf("Client[%d] Read error: %s", client.ID, client.RemoteIP)
 				client.kill()
 				break
