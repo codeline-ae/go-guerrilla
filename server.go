@@ -415,32 +415,24 @@ func (s *server) handleClient(client *client) {
 			client.bufin.setLimit(CommandLineMaxLength)
 			input, err := s.readCommand(client)
 			s.log().Debugf("Client[%d][%s] sent: %s", client.ID, client.RemoteIP, input)
-
-			mitigate := false
-			if len(input) > 0 && err != nil {
-				mitigate = true
+			if err == io.EOF && len(input) > 0 {
+				s.log().WithError(err).Warnf("Client[%d] closed the connection: %s, Input length: %d", client.ID, client.RemoteIP, len(input))
+				return
+			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+				s.log().WithError(err).Warnf("Client[%d] Timeout: %s", client.ID, client.RemoteIP)
+				return
+			} else if err == LineLimitExceeded {
+				client.sendResponse(r.FailLineTooLong)
+				client.kill()
+				break
+			} else if erro != io.EOF && err != nil {
+				s.log().WithError(err).Warnf("Client[%d] Read error: %s", client.ID, client.RemoteIP)
+				client.kill()
+				break
 			}
-
-			if !mitigate {
-				if err == io.EOF {
-					s.log().WithError(err).Warnf("Client[%d] closed the connection: %s, Input length: %d", client.ID, client.RemoteIP, len(input))
-					return
-				} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-					s.log().WithError(err).Warnf("Client[%d] Timeout: %s", client.ID, client.RemoteIP)
-					return
-				} else if err == LineLimitExceeded {
-					client.sendResponse(r.FailLineTooLong)
-					client.kill()
-					break
-				} else if err != nil {
-					s.log().WithError(err).Warnf("Client[%d] Read error: %s", client.ID, client.RemoteIP)
-					client.kill()
-					break
-				}
-				if s.isShuttingDown() {
-					client.state = ClientShutdown
-					continue
-				}
+			if s.isShuttingDown() {
+				client.state = ClientShutdown
+				continue
 			}
 
 			cmdLen := len(input)
