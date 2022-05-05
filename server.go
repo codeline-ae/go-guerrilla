@@ -419,9 +419,6 @@ func (s *server) handleClient(client *client) {
 			mitigate := false
 			if len(input) == 0 && err != nil {
 				mitigate = true
-				s.log().WithError(err).Debugf("Client[%d] Will go through mitigation: %s. Input length: %d", client.ID, client.RemoteIP, len(input))
-			} else {
-				s.log().WithError(err).Debugf("Client[%d] Skipping mitigation: %s. Input length: %d", client.ID, client.RemoteIP, len(input))
 			}
 
 			if !mitigate {
