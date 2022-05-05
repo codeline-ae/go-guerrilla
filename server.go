@@ -415,7 +415,7 @@ func (s *server) handleClient(client *client) {
 			client.bufin.setLimit(CommandLineMaxLength)
 			input, err := s.readCommand(client)
 			s.log().Debugf("Client[%d][%s] sent: %s", client.ID, client.RemoteIP, input)
-			if err == io.EOF {
+			if err == io.EOF && len(input) > 0 {
 				s.log().WithError(err).Warnf("Client[%d] closed the connection: %s", client.ID, client.RemoteIP)
 				return
 			} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
